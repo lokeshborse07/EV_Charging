@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ev_charging/main.dart'; // Update with your actual app import
+import 'package:EVConnect/main.dart'; // Update with your actual app import
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {

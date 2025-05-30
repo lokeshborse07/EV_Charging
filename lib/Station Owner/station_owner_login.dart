@@ -33,15 +33,42 @@ class _StationOwnerLoginScreenState extends State<StationOwnerLoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _auth.signInWithEmailAndPassword(
+      final userCredential = await _auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
+      final user = userCredential.user;
+
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+        await _auth.signOut();
+
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Email Not Verified", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+            content: Text(
+              "A verification link has been sent to your email.\n\nPlease verify your email before logging in again. "
+                  "Make sure to check your spam or junk folder too.",
+              style: GoogleFonts.poppins(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text("OK", style: GoogleFonts.poppins(color: Colors.blue.shade800)),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) =>  StationOwnerHomePage()),
+        MaterialPageRoute(builder: (context) => StationOwnerHomePage()),
       );
     } on FirebaseAuthException catch (e) {
       String message = "Login failed";
@@ -53,18 +80,12 @@ class _StationOwnerLoginScreenState extends State<StationOwnerLoginScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error: ${e.toString()}"),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text("Error: ${e.toString()}"), backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -74,7 +95,6 @@ class _StationOwnerLoginScreenState extends State<StationOwnerLoginScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isSmallScreen = MediaQuery.of(context).size.width < 600;
-    final theme = Theme.of(context);
 
     return Scaffold(
       body: Container(
@@ -154,9 +174,7 @@ class _StationOwnerLoginScreenState extends State<StationOwnerLoginScreen> {
                               prefixIcon: Icon(Icons.lock, color: Colors.blue.shade800),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
+                                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
                                   color: Colors.grey.shade600,
                                 ),
                                 onPressed: () {
@@ -187,8 +205,36 @@ class _StationOwnerLoginScreenState extends State<StationOwnerLoginScreen> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: () {
-                                // Add forgot password functionality
+                              onPressed: () async {
+                                final email = _emailController.text.trim();
+                                if (email.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Please enter your email to reset password"),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                try {
+                                  await _auth.sendPasswordResetEmail(email: email);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Password reset link sent to your email"),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                } on FirebaseAuthException catch (e) {
+                                  String message = "Failed to send reset email";
+                                  if (e.code == 'user-not-found') {
+                                    message = "No user found with this email";
+                                  }
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(message),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               },
                               child: Text(
                                 "Forgot Password?",

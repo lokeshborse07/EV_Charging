@@ -8,6 +8,7 @@ import 'Car Owner/car_owner_signup.dart';
 import 'Car Owner/car_owner_login.dart';
 import 'Station Owner/station_owner_login.dart';
 import 'Station Owner/theme_notifier.dart';
+import 'Car Owner/car_owner_home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,8 +34,14 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const WelcomeScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const WelcomeScreen(),
+        '/carOwnerHome': (context) => CarOwnerHomePage(),
+        // add other named screens if needed
+      },
     );
+
   }
 }
 

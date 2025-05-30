@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ev_charging/shared_preferences/shared_preferences_helper.dart';
+import 'package:EVConnect/shared_preferences/shared_preferences_helper.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SettingsPage extends StatefulWidget {

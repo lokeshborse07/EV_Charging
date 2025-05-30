@@ -18,6 +18,7 @@ class ViewStationsScreen extends StatefulWidget {
 class _ViewStationsScreenState extends State<ViewStationsScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _stations = [];
+  String selectedCategory = "Both"; // Filter option
 
   @override
   void initState() {
@@ -65,6 +66,13 @@ class _ViewStationsScreenState extends State<ViewStationsScreen> {
         GeoPoint? location = data['location'];
 
         if (location != null) {
+          String stationCategory = data['category'] ?? 'Both';
+
+          // Filter based on selected category
+          if (selectedCategory != 'Both' && stationCategory != selectedCategory && stationCategory != 'Both') {
+            continue;
+          }
+
           double distance = Geolocator.distanceBetween(
             userPosition.latitude,
             userPosition.longitude,
@@ -146,84 +154,109 @@ class _ViewStationsScreenState extends State<ViewStationsScreen> {
         backgroundColor: Colors.blue.shade900,
         foregroundColor: Colors.white,
       ),
-      body: _isLoading
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SpinKitFadingFour(
-              color: Colors.blue.shade900,
-              size: 50.0,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: DropdownButtonFormField<String>(
+              value: selectedCategory,
+              decoration: InputDecoration(
+                labelText: "Vehicle Type",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              items: ['Both', 'Two Wheeler', 'Four Wheeler'].map((type) {
+                return DropdownMenuItem(value: type, child: Text(type));
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedCategory = value ?? 'Both';
+                });
+                _fetchNearbyStations();
+              },
             ),
-            const SizedBox(height: 16),
-            Text(
-              "Loading Nearby Stations...",
-              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey.shade600),
-            ),
-          ],
-        ),
-      )
-          : _stations.isEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.ev_station, size: 60, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(
-              "No nearby stations found within 100 km.",
-              style: GoogleFonts.poppins(fontSize: 18, color: Colors.grey.shade600),
-            ),
-          ],
-        ),
-      )
-          : RefreshIndicator(
-        onRefresh: _refreshStations,
-        child: CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.all(16),
-              sliver: SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: screenWidth < 600 ? 1 : 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: screenWidth < 600 ? 1.5 : 1.8,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                    final station = _stations[index];
-                    return ChargingStationCard(
-                      stationId: station['id'] ?? '',
-                      stationName: station['stationName'] ?? 'Unknown Station',
-                      location: station['stationCity'] ?? 'Unknown City',
-                      distance: (station['distance'] as num?)?.toDouble() ?? 0.0,
-                      rating: (station['rating'] as num?)?.toDouble() ?? 0.0,
-                      powerOutput: (station['powerOutput'] as num?)?.toDouble() ?? 0.0,
-                      chargerType: station['chargerType'] ?? 'Unknown',
-                      isBook: station['isBook'] as bool? ?? false,
-                      availablePorts: (station['availablePorts'] as num?)?.toInt() ?? 0,
-                      totalPorts: (station['totalPorts'] as num?)?.toInt() ?? 0,
-                      onBookNow: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BookChargerScreen(
-                              stationId: station['id'] ?? '',
-                              stationName: station['stationName'] ?? 'Unknown Station',
-                              numberOfChargers: station['totalPorts'] ?? 0,
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  childCount: _stations.length,
-                ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SpinKitFadingFour(
+                    color: Colors.blue.shade900,
+                    size: 50.0,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Loading Nearby Stations...",
+                    style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            )
+                : _stations.isEmpty
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.ev_station, size: 60, color: Colors.grey.shade400),
+                  const SizedBox(height: 16),
+                  Text(
+                    "No nearby stations found within 100 km.",
+                    style: GoogleFonts.poppins(fontSize: 18, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            )
+                : RefreshIndicator(
+              onRefresh: _refreshStations,
+              child: CustomScrollView(
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverGrid(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: screenWidth < 600 ? 1 : 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: screenWidth < 600 ? 1.5 : 1.8,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                          final station = _stations[index];
+                          return ChargingStationCard(
+                            stationId: station['id'] ?? '',
+                            stationName: station['stationName'] ?? 'Unknown Station',
+                            location: station['stationCity'] ?? 'Unknown City',
+                            distance: (station['distance'] as num?)?.toDouble() ?? 0.0,
+                            rating: (station['rating'] as num?)?.toDouble() ?? 0.0,
+                            powerOutput: (station['powerOutput'] as num?)?.toDouble() ?? 0.0,
+                            chargerType: station['chargerType'] ?? 'Unknown',
+                            isBook: station['isBook'] as bool? ?? false,
+                            availablePorts: (station['availablePorts'] as num?)?.toInt() ?? 0,
+                            totalPorts: (station['totalPorts'] as num?)?.toInt() ?? 0,
+                            onBookNow: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BookChargerScreen(
+                                    stationId: station['id'] ?? '',
+                                    stationName: station['stationName'] ?? 'Unknown Station',
+                                    numberOfChargers: station['totalPorts'] ?? 0,
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        childCount: _stations.length,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'car_owner_home.dart';
 
 class PaymentScreen extends StatefulWidget {
   final Map<String, dynamic> bookingData;
@@ -24,7 +23,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
   bool _isProcessing = false;
   bool _paymentSuccess = false;
 
-  // Get current user's email
   String? get _currentUserEmail => FirebaseAuth.instance.currentUser?.email;
 
   Future<void> _confirmPayment() async {
@@ -42,19 +40,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
     setState(() => _isProcessing = true);
 
     try {
-      // 1. Create booking document with car owner's email
       final bookingDataWithEmail = {
         ...widget.bookingData,
-        'carOwnerEmail': _currentUserEmail, // Add email to booking data
-        'createdAt': FieldValue.serverTimestamp(), // Add timestamp for sorting
-        'status': 'confirmed', // Add booking status
+        'carOwnerEmail': _currentUserEmail,
+        'createdAt': FieldValue.serverTimestamp(),
+        'status': 'confirmed',
       };
 
       await FirebaseFirestore.instance
           .collection('bookings')
           .add(bookingDataWithEmail);
 
-      // 2. Update port status
       await FirebaseFirestore.instance
           .collection('stations')
           .doc(widget.bookingData['stationId'])
@@ -63,19 +59,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
           .update({
         'busy': true,
         'bookedUntil': widget.bookingData['endTime'],
-        'currentBookingId': bookingDataWithEmail['bookingId'], // Optional: store booking reference
+        'currentBookingId': bookingDataWithEmail['bookingId'],
       });
 
-      // 3. Show success
       setState(() => _paymentSuccess = true);
       widget.onPaymentSuccess();
 
-      // 4. Navigate to CarOwnerHomePage after delay
+      // Redirect to CarOwnerHomePage using named route after short delay
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) =>  CarOwnerHomePage()),
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/carOwnerHome',
                 (route) => false,
           );
         }

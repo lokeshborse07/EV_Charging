@@ -52,6 +52,14 @@ class _CarOwnerLoginScreenState extends State<CarOwnerLoginScreen> {
         return;
       }
 
+      // Check if email is verified
+      if (!userCredential.user!.emailVerified) {
+        await userCredential.user!.sendEmailVerification();
+        if (!mounted) return;
+        _showErrorDialog("Please verify your email. A verification link has been sent.");
+        return;
+      }
+
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
@@ -74,6 +82,26 @@ class _CarOwnerLoginScreenState extends State<CarOwnerLoginScreen> {
       _showErrorDialog("An unexpected error occurred. Please try again.");
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _resetPassword() async {
+    if (_emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your email")),
+      );
+      return;
+    }
+
+    try {
+      await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password reset email sent")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.toString()}")),
+      );
     }
   }
 
@@ -217,9 +245,7 @@ class _CarOwnerLoginScreenState extends State<CarOwnerLoginScreen> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: () {
-                                // Add forgot password functionality
-                              },
+                              onPressed: _resetPassword,
                               child: Text(
                                 "Forgot Password?",
                                 style: GoogleFonts.poppins(

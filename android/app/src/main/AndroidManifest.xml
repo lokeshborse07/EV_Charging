@@ -7,7 +7,7 @@
 
 
     <application
-        android:label="ev_charging"
+        android:label="EVConnect"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

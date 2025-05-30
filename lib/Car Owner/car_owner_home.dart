@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'view_stations.dart';
-import 'view_bookings.dart'; // Make sure to create this file
-import 'profile_page.dart'; // Make sure to create this file
+import 'view_bookings.dart';
+import 'profile_page.dart';
 import 'settings_page.dart';
+import '../main.dart'; // Make sure to import your WelcomeScreen from main.dart
 
 class CarOwnerHomePage extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class _CarOwnerHomePageState extends State<CarOwnerHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text("Car Owner Dashboard", style: GoogleFonts.poppins()),
         centerTitle: true,
         backgroundColor: Colors.blue.shade900,
@@ -23,7 +25,11 @@ class _CarOwnerHomePageState extends State<CarOwnerHomePage> {
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () {
-              Navigator.pop(context); // Logout action
+              // Fixed: Properly redirect to WelcomeScreen after logout
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => WelcomeScreen()),
+                    (route) => false,
+              );
             },
           ),
         ],
@@ -41,7 +47,10 @@ class _CarOwnerHomePageState extends State<CarOwnerHomePage> {
               label: 'VIEW STATIONS',
               color: Colors.green,
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ViewStationsScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ViewStationsScreen()),
+                );
               },
             ),
             DashboardItem(
@@ -49,7 +58,10 @@ class _CarOwnerHomePageState extends State<CarOwnerHomePage> {
               label: 'VIEW BOOKINGS',
               color: Colors.blue,
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => CarOwnerBookingsPage()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CarOwnerBookingsPage()),
+                );
               },
             ),
             DashboardItem(
@@ -57,7 +69,10 @@ class _CarOwnerHomePageState extends State<CarOwnerHomePage> {
               label: 'PROFILE',
               color: Colors.orange,
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => CarOwnerProfilePage()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CarOwnerProfilePage()),
+                );
               },
             ),
             DashboardItem(
@@ -65,7 +80,10 @@ class _CarOwnerHomePageState extends State<CarOwnerHomePage> {
               label: 'SETTINGS',
               color: Colors.purple,
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()),
+                );
               },
             ),
           ],
@@ -81,7 +99,12 @@ class DashboardItem extends StatelessWidget {
   final VoidCallback onTap;
   final Color color;
 
-  DashboardItem({required this.icon, required this.label, required this.onTap, required this.color});
+  DashboardItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +134,11 @@ class DashboardItem extends StatelessWidget {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.white,
+              ),
             ),
           ],
         ),

@@ -53,11 +53,15 @@ class _CarOwnerSignUpScreenState extends State<CarOwnerSignUpScreen> {
         password: _passwordController.text.trim(),
       );
 
+      // Send email verification after successful sign-up
+      await userCredential.user!.sendEmailVerification();
+
       await _firestore.collection('carOwners').doc(userCredential.user!.uid).set({
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
         'mobile': _mobileController.text.trim(),
         'userId': userCredential.user!.uid,
+        'role': 'carOwner', // 👈 this is the fix
         'createdAt': FieldValue.serverTimestamp(),
       });
 
@@ -93,7 +97,7 @@ class _CarOwnerSignUpScreenState extends State<CarOwnerSignUpScreen> {
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          "Your account has been successfully created.",
+          "A verification email has been sent to your email address. Please verify your email before logging in.",
           style: GoogleFonts.poppins(),
         ),
         actions: [
@@ -167,7 +171,7 @@ class _CarOwnerSignUpScreenState extends State<CarOwnerSignUpScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            "Create Account",
+                            "Car Owner Sign Up",
                             style: GoogleFonts.poppins(
                               fontSize: isSmallScreen ? 24 : 28,
                               fontWeight: FontWeight.bold,
@@ -243,7 +247,7 @@ class _CarOwnerSignUpScreenState extends State<CarOwnerSignUpScreen> {
                                 strokeWidth: 2,
                               )
                                   : Text(
-                                "SIGN UP",
+                                "CREATE ACCOUNT",
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -251,34 +255,34 @@ class _CarOwnerSignUpScreenState extends State<CarOwnerSignUpScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Already have an account? ",
-                                style: GoogleFonts.poppins(
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>  CarOwnerLoginScreen()),
-                                  );
-                                },
-                                child: Text(
-                                  "Login",
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.blue.shade800,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Already have an account? ",
+                            style: GoogleFonts.poppins(
+                              color: Colors.grey.shade600,
+                            ),
                           ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>  CarOwnerLoginScreen()),
+                              );
+                            },
+                            child: Text(
+                              "Login",
+                              style: GoogleFonts.poppins(
+                                color: Colors.blue.shade800,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                         ],
                       ),
                     ),

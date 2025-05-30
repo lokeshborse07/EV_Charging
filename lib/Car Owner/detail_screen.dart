@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:ev_charging/Screen/Map_page.dart';
-import 'package:ev_charging/Screen/const.dart';
-import 'package:ev_charging/Screen/Distance_calcutator.dart';
-import 'package:ev_charging/Screen/current_lacation_store.dart'; // For animation
+import 'package:EVConnect/Screen/Map_page.dart';
+import 'package:EVConnect/Screen/const.dart';
+import 'package:EVConnect/Screen/Distance_calcutator.dart';
+import 'package:EVConnect/Screen/current_lacation_store.dart';
 
 class StationDetailsScreen extends StatefulWidget {
   final String id;
@@ -38,9 +38,10 @@ class StationDetailsScreen extends StatefulWidget {
 }
 
 class _StationDetailsScreenState extends State<StationDetailsScreen> {
-  double chargingCapacity = 20; // Default value
+  double chargingCapacity = 20;
   double totalCost = 0;
-  double pricePerKW = 5; // Assume price per KW
+  double pricePerKW = 5;
+
   double? latitude = LocationStorage().getLatitude();
   double? longitude = LocationStorage().getLongitude();
 
@@ -66,7 +67,6 @@ class _StationDetailsScreenState extends State<StationDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Station Image
             Container(
               height: 200,
               width: double.infinity,
@@ -79,16 +79,12 @@ class _StationDetailsScreenState extends State<StationDetailsScreen> {
               ),
             ),
             SizedBox(height: 10),
-            // Station Details Section
             Row(
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      widget.stationName,
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
+                    Text(widget.stationName, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                     SizedBox(height: 5),
                     Text(widget.stationAddress, style: TextStyle(fontWeight: FontWeight.bold)),
                     SizedBox(height: 8),
@@ -113,7 +109,7 @@ class _StationDetailsScreenState extends State<StationDetailsScreen> {
                                 dlat: widget.latitude,
                                 dlong: widget.longitude,
                                 slat: latitude ?? Const.userLatitude,
-                                slong: widget.longitude,
+                                slong: longitude ?? Const.userLongitude,
                               ),
                             ),
                           );
@@ -131,7 +127,6 @@ class _StationDetailsScreenState extends State<StationDetailsScreen> {
               ],
             ),
             SizedBox(height: 30),
-            // Charging Capacity Slider
             Text(
               'Set Charging Capacity (${chargingCapacity.round()}%)',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
@@ -149,13 +144,11 @@ class _StationDetailsScreenState extends State<StationDetailsScreen> {
               },
             ),
             SizedBox(height: 16),
-            // Total Cost
             Text(
               'Total Cost: ₹${totalCost.toStringAsFixed(2)}',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Spacer(),
-            // Payment Button
             Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
